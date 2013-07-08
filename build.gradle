@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'war'
+
+	group = 'me.roessing.lrdemo'
+	version = '1.0-SNAPSHOT'
+
+configurations.compile.transitive = true
+
+	sourceCompatibility = 1.6
+	targetCompatibility = 1.6
+
+repositories {
+		mavenRepo name:'Local', url: "file://" + System.properties['user.home'] + "/.m2/repository"
+ 		mavenRepo url: "http://repo.maven.apache.org/maven2"
+		mavenCentral()
+		//mavenRepo artifactUrls: ["http://repo.maven.apache.org/maven2"]
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: "file://" + System.properties['user.home'] + "/.m2/repository")
+    }
+}
+
+
+	dependencies {
+	compile "org.springframework:spring-core:3.2.0.RELEASE"
+	compile "org.springframework:spring-web:3.2.0.RELEASE"
+	compile "javax.servlet:servlet-api:2.5"
+	compile "org.springframework:spring-webmvc:3.2.0.RELEASE"
+	compile "javax.servlet:jstl:1.2"
+	testCompile "org.springframework:spring-test:3.2.0.RELEASE"
+	testCompile "junit:junit:4.8.2"
+	providedCompile "javax.servlet.jsp:jsp-api:2.1"
+	}
+
+task replacePoms(dependsOn: install) << {
+    def pomsDir = new File(project.buildDir, "poms")
+    def defaultPomName = "pom-default.xml"
+    def defaultPom = new File(pomsDir, defaultPomName)
+    if (defaultPom.exists()) {
+      File pomFile = new File(project.projectDir, "pom.xml")
+      if (pomFile.exists()) {
+        pomFile.renameTo(new File(project.projectDir, "pom.xml.bak"))
+      }
+      project.copy {
+        from(pomsDir) {
+          include defaultPomName
+          rename defaultPomName, 'pom.xml'
+        }
+        into(project.projectDir)
+      }
+    }
+}
