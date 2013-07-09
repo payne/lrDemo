@@ -1,4 +1,4 @@
-package me.roessing.lrdemo;
+package me.roessing.lrdemo.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;

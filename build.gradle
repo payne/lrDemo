@@ -11,17 +11,20 @@ configurations.compile.transitive = true
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
+def timestamp = new Date().format('yyyyMMdd-HHmm')
+
+
 // ------- START dependencies for gradle itself -----------
 buildscript {
-  repositories {
-     mavenLocal()
-     mavenCentral()
-     mavenRepo(name: 'zt-public-snapshots',
-               url: 'http://repos.zeroturnaround.com/nexus/content/groups/zt-public/')
-  }
-  dependencies {
-     classpath group: 'org.zeroturnaround', name: 'gradle-jrebel-plugin', version: '1.0.2-SNAPSHOT'
-  }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        mavenRepo(name: 'zt-public-snapshots',
+                url: 'http://repos.zeroturnaround.com/nexus/content/groups/zt-public/')
+    }
+    dependencies {
+        classpath group: 'org.zeroturnaround', name: 'gradle-jrebel-plugin', version: '1.0.2-SNAPSHOT'
+    }
 }
 
 // ------- END dependencies for gradle itself -----------
@@ -38,7 +41,7 @@ repositories {
 uploadArchives {
     repositories.mavenDeployer {
         repository(url: "file://" + System.properties['user.home'] + "/.m2/repository")
-       // mavenLocal()
+        // mavenLocal()
     }
 }
 
@@ -54,6 +57,21 @@ dependencies {
     providedCompile "javax.servlet.jsp:jsp-api:2.1"
 
 }
+//make rebel.xml part of default build.
+processResources.dependsOn(generateRebel, generateLiveRebel)
+
+rebel {
+    alwaysGenerate = true
+    showGenerated = true
+    rebelXmlDirectory = "build/classes"
+    warSourceDirectory = "src/main/webapp"
+    version = version + '-' + timestamp
+}
+
+war {
+    classifier = timestamp
+}
+
 
 task replacePoms(dependsOn: install) << {
     def pomsDir = new File(project.buildDir, "poms")
@@ -73,12 +91,5 @@ task replacePoms(dependsOn: install) << {
         }
     }
 
-    rebel {
-        alwaysGenerate = true
-        showGenerated = true
-        rebelXmlDirectory = "build/classes"
-        warSourceDirectory = "src/main/webapp"
-    }
-    //make rebel.xml part of default build.
-    processResources.dependsOn(generateRebel)
+
 }
