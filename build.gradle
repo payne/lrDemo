@@ -1,55 +1,84 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'war'
+apply plugin: 'rebel'
 
-	group = 'me.roessing.lrdemo'
-	version = '1.0-SNAPSHOT'
+group = 'me.roessing.lrdemo'
+version = '1.0-SNAPSHOT'
 
 configurations.compile.transitive = true
 
-	sourceCompatibility = 1.6
-	targetCompatibility = 1.6
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+// ------- START dependencies for gradle itself -----------
+buildscript {
+  repositories {
+     mavenLocal()
+     mavenCentral()
+     mavenRepo(name: 'zt-public-snapshots',
+               url: 'http://repos.zeroturnaround.com/nexus/content/groups/zt-public/')
+  }
+  dependencies {
+     classpath group: 'org.zeroturnaround', name: 'gradle-jrebel-plugin', version: '1.0.2-SNAPSHOT'
+  }
+}
+
+// ------- END dependencies for gradle itself -----------
 
 repositories {
-		mavenRepo name:'Local', url: "file://" + System.properties['user.home'] + "/.m2/repository"
- 		mavenRepo url: "http://repo.maven.apache.org/maven2"
-		mavenCentral()
-		//mavenRepo artifactUrls: ["http://repo.maven.apache.org/maven2"]
+    //mavenRepo name:'Local', url: "file://" + System.properties['user.home'] + "/.m2/repository"
+    //mavenRepo artifactUrls: ["http://repo.maven.apache.org/maven2"]
+    mavenRepo url: "http://repo.maven.apache.org/maven2"
+    mavenCentral()
+    mavenLocal()
 }
+
 
 uploadArchives {
     repositories.mavenDeployer {
         repository(url: "file://" + System.properties['user.home'] + "/.m2/repository")
+       // mavenLocal()
     }
 }
 
 
-	dependencies {
-	compile "org.springframework:spring-core:3.2.0.RELEASE"
-	compile "org.springframework:spring-web:3.2.0.RELEASE"
-	compile "javax.servlet:servlet-api:2.5"
-	compile "org.springframework:spring-webmvc:3.2.0.RELEASE"
-	compile "javax.servlet:jstl:1.2"
-	testCompile "org.springframework:spring-test:3.2.0.RELEASE"
-	testCompile "junit:junit:4.8.2"
-	providedCompile "javax.servlet.jsp:jsp-api:2.1"
-	}
+dependencies {
+    compile "org.springframework:spring-core:3.2.0.RELEASE"
+    compile "org.springframework:spring-web:3.2.0.RELEASE"
+    compile "javax.servlet:servlet-api:2.5"
+    compile "org.springframework:spring-webmvc:3.2.0.RELEASE"
+    compile "javax.servlet:jstl:1.2"
+    testCompile "org.springframework:spring-test:3.2.0.RELEASE"
+    testCompile "junit:junit:4.8.2"
+    providedCompile "javax.servlet.jsp:jsp-api:2.1"
+
+}
 
 task replacePoms(dependsOn: install) << {
     def pomsDir = new File(project.buildDir, "poms")
     def defaultPomName = "pom-default.xml"
     def defaultPom = new File(pomsDir, defaultPomName)
     if (defaultPom.exists()) {
-      File pomFile = new File(project.projectDir, "pom.xml")
-      if (pomFile.exists()) {
-        pomFile.renameTo(new File(project.projectDir, "pom.xml.bak"))
-      }
-      project.copy {
-        from(pomsDir) {
-          include defaultPomName
-          rename defaultPomName, 'pom.xml'
+        File pomFile = new File(project.projectDir, "pom.xml")
+        if (pomFile.exists()) {
+            pomFile.renameTo(new File(project.projectDir, "pom.xml.bak"))
         }
-        into(project.projectDir)
-      }
+        project.copy {
+            from(pomsDir) {
+                include defaultPomName
+                rename defaultPomName, 'pom.xml'
+            }
+            into(project.projectDir)
+        }
     }
+
+    rebel {
+        alwaysGenerate = true
+        showGenerated = true
+        rebelXmlDirectory = "build/classes"
+        warSourceDirectory = "src/main/webapp"
+    }
+    //make rebel.xml part of default build.
+    processResources.dependsOn(generateRebel)
 }
