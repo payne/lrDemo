@@ -83,8 +83,8 @@
         <entry key="FindMaskedFields" value="true" />
         <entry key="FindMismatchedWaitOrNotify" value="true" />
         <entry key="FindNakedNotify" value="true" />
-        <entry key="FindNonSerializableStoreIntoSession" value="false" />
-        <entry key="FindNonSerializableValuePassedToWriteObject" value="false" />
+        <entry key="FindNonSerializableStoreIntoSession" value="true" />
+        <entry key="FindNonSerializableValuePassedToWriteObject" value="true" />
         <entry key="FindNonShortCircuit" value="true" />
         <entry key="FindNullDeref" value="true" />
         <entry key="FindNullDerefsInvolvingNonShortCircuitEvaluation" value="true" />
@@ -195,6 +195,7 @@
         <entry key="I18N" value="true" />
         <entry key="MALICIOUS_CODE" value="true" />
         <entry key="MT_CORRECTNESS" value="true" />
+        <entry key="NOISE" value="false" />
         <entry key="PERFORMANCE" value="true" />
         <entry key="SECURITY" value="true" />
         <entry key="STYLE" value="true" />
