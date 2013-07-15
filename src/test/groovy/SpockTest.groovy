@@ -35,8 +35,9 @@ class SpockTest extends GebSpec {
         when:
           "form is filled with name: name_1"
           nameForm.with {
-              name = "name_1"
+              name = theName
           }
+         println logStr
 
         and:
           "form is submitted"
@@ -46,7 +47,19 @@ class SpockTest extends GebSpec {
           "out page is shown and the response contains \"name_!\" "
           at SavePage
           def res = userDataResponse.text()
-          assert res.contains('name_1'), 'result should contain \"name_1\" but was ' + res
+          assert res.contains(theName), 'result should contain \"name_1\" but was ' + res
+
+        //run this test with parameters in interation.... Yiha!
+        where:
+          theName | logStr
+          "name_1"| "try name 1"
+          "name_2"| "try name 2"
+          "name_3"| "try name 3"
+          "name_4"| "try name 4"
+          "name_5"| "try name 5"
+          "name_6"| "try name 6"
+          "name_7"| "try name 7"
+          "name_8"| "try name 8"
 
     }
 
