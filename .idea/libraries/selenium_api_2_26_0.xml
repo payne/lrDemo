@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="selenium-api-2.26.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/artifacts-24/filestore/org.seleniumhq.selenium/selenium-api/2.26.0/jar/6e58d2f7af5ed91ceccb78307c014785f9189de2/selenium-api-2.26.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/artifacts-24/filestore/org.seleniumhq.selenium/selenium-api/2.26.0/source/77d30a0e373127994e7914a3e1a7b17257aed167/selenium-api-2.26.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

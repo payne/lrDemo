@@ -32,7 +32,7 @@
     <form id="nameForm">
         <div class="error hide" id="idError">Please enter a valid name</div>
         <label for="name">Name</label><input name="name" id="name"/>
-        <input type="submit" value="Get userData"/> <br/><br/>
+        <input id="submitNameForm" type="submit" value="Get userData"/> <br/><br/>
 
         <div id="userDataResponse"></div>
     </form>
@@ -41,7 +41,7 @@
         <label for="name">Name</label><input name="name" id="name"/>
         <label for="surname">Surname</label><input name="surname" id="surname"/>
         <label for="age">Age</label><input name="age" id="age"/>
-        <input type="submit" value="create new userData"/> <br/><br/>
+        <input id="submitNewUserDataForm" type="submit" value="create new userData"/> <br/><br/>
 
         <div id="newUserDataResponse"></div>
 

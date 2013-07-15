@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="geb-junit4-0.9.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/artifacts-24/filestore/org.gebish/geb-junit4/0.9.0/jar/8dd7351925e9472196f20d3a72dcbe90b71716c4/geb-junit4-0.9.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/artifacts-24/filestore/org.gebish/geb-junit4/0.9.0/source/4ed5bb344ff890de374f73d5ad4cdad29e2ad3c9/geb-junit4-0.9.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
