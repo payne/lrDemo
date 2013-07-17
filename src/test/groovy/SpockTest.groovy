@@ -1,4 +1,6 @@
 import geb.spock.GebSpec
+import pages.SavePage
+import pages.UserDataPage
 
 class SpockTest extends GebSpec {
     def "enter new user data"() {
@@ -47,19 +49,21 @@ class SpockTest extends GebSpec {
           "out page is shown and the response contains \"name_!\" "
           at SavePage
           def res = userDataResponse.text()
-          assert res.contains(theName), 'result should contain \"name_1\" but was ' + res
+          //assert res.contains(theName), 'result should contain \"name_1\" but was ' + res
+          userDataResponse.text()  =~ toMatch
 
+        println 'testing in loops'
         //run this test with parameters in interation.... Yiha!
         where:
-          theName | logStr
-          "name_1"| "try name 1"
-          "name_2"| "try name 2"
-          "name_3"| "try name 3"
-          "name_4"| "try name 4"
-          "name_5"| "try name 5"
-          "name_6"| "try name 6"
-          "name_7"| "try name 7"
-          "name_8"| "try name 8"
+          theName | toMatch | logStr
+          "name_1"| "name_ERROR"|"try name 1" //this one will fail! look at the report.
+          "name_2"| "name_2"|"try name 2"
+          "name_3"| "name_3"|"try name 3"
+          "name_4"| "name_4"|"try name 4"
+          "name_5"| "name_5"|"try name 5"
+          "name_6"| "name_6"|"try name 6"
+          "name_7"| "name_7"|"try name 7"
+          "name_8"| "name_8"|"try name 8"
 
     }
 

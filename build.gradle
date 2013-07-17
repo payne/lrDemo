@@ -3,7 +3,8 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'war'
 apply plugin: 'rebel'
-apply plugin: "groovy"
+apply plugin: 'groovy'
+apply plugin: 'cargo'
 
 //apply from: 'https://github.com/kensipe/gradle-samples/raw/master/jbehave.gradle'
 
@@ -17,14 +18,12 @@ targetCompatibility = 1.6
 
 def timestamp = new Date().format('yyyyMMdd-HHmm')
 
-
 // ------- START dependencies for gradle itself -----------
 buildscript {
     //load the cucumber gradle integration.
     // run it with the task : "> gradle cucumber"
     //there's also some task configuration below...
-    apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
-
+    //apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin /gradle-cucumber-plugin/0.2/cucumberinit.gradle'
 
 
     repositories {
@@ -35,10 +34,21 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.zeroturnaround', name: 'gradle-jrebel-plugin', version: '1.0.2-SNAPSHOT'
+        classpath 'org.gradle.api.plugins:gradle-cargo-plugin:0.6'
     }
+
+
 }
 
 // ------- END dependencies for gradle itself -----------
+
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
 
 repositories {
     //mavenRepo name:'Local', url: "file://" + System.properties['user.home'] + "/.m2/repository"
@@ -61,9 +71,10 @@ dependencies {
     def gebVersion = "0.9.0"
     def seleniumVersion = "2.26.0"
     def springVersion = "3.2.0.RELEASE"
-    def junitVersion = "4.8.2"
+    def junitVersion = "4.11"
     def groovyVersion = "1.8.6"
     def spockVersion = "0.7-groovy-1.8"
+    def cucumberVersion = "1.1.3"
 
     providedCompile "javax.servlet.jsp:jsp-api:2.1"
     compile "javax.servlet:jstl:1.2"
@@ -74,30 +85,49 @@ dependencies {
     compile "org.springframework:spring-webmvc:$springVersion"
     compile "org.codehaus.jackson:jackson-mapper-asl:1.9.10"
 
-    testCompile "org.springframework:spring-test:$springVersion"
-    testCompile "junit:junit:$junitVersion"
-    // If using JUnit, need to depend on geb-junit (3 or 4)
-    testCompile "org.gebish:geb-junit4:$gebVersion"
-    testCompile "junit:junit-dep:$junitVersion"
-    //spock dependencies
-
     groovy "org.codehaus.groovy:groovy-all:$groovyVersion"
 
+    testCompile "org.springframework:spring-test:$springVersion"
+    testCompile "junit:junit:$junitVersion"
+    testCompile "junit:junit-dep:$junitVersion"
+
+    //spock dependencies
     // If using Spock, need to depend on geb-spock
+    testCompile "org.gebish:geb-junit4:$gebVersion"
     testCompile "org.gebish:geb-spock:$gebVersion"
     testCompile "org.spockframework:spock-core:$spockVersion"
     // Need a web driver implementation
     testCompile "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
     testRuntime "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
 
+    //cucumber
+    //cucumberRuntime files("${jar.archivePath}"), 'info.cukes:cucumber-groovy:1.0.11'
+    testCompile "info.cukes:cucumber-groovy:$cucumberVersion"
+    testCompile "info.cukes:cucumber-jvm:$cucumberVersion"
+    testCompile "info.cukes:cucumber-jvm-deps:1.0.3"
+    testCompile "info.cukes:cucumber-junit:$cucumberVersion"
+    testCompile "info.cukes:cucumber-core:$cucumberVersion"
+    testCompile "info.cukes:cucumber-html:0.2.3" //this version fixed the  blank report page cauased by
+    // before/after blocks. @see https://github.com/cucumber/cucumber-html/pull/24
 
+    cucumberRuntime files("${jar.archivePath}")
+
+    //cargo plugin to deploy to tomcat
+    def cargoVersion = '1.3.3'
+    cargo "org.codehaus.cargo:cargo-core-uberjar:$cargoVersion", "org.codehaus.cargo:cargo-ant:$cargoVersion"
 }
+
+// ## Livecycle dependencies ##
 //make rebel.xml part of default build.
 processResources.dependsOn(generateRebel, generateLiveRebel)
+project.afterEvaluate {
+    cargoStartLocal.dependsOn(war)
+}
 
 
-test{
-    systemProperties "geb.build.reportsDir":"$reportsDir/geb"
+
+test {
+    systemProperties "geb.build.reportsDir": "$reportsDir/geb"
 }
 
 rebel {
@@ -110,6 +140,25 @@ rebel {
 
 war {
     classifier = timestamp
+}
+
+//# configuration of cargo plugin - deploy to tomcat.
+cargo {
+    containerId = 'tomcat7x'
+    port = 8081
+    deployable {
+        context = '/'
+    }
+
+    local {
+        homeDir = file('c:\\dev\\sw\\tomcat\\current\\')
+        output = file('build/output.log')
+        tomcat {
+            ajpPort = 9091
+        }
+    }
+
+
 }
 
 
@@ -130,15 +179,56 @@ task replacePoms(dependsOn: install) << {
             into(project.projectDir)
         }
     }
-
-cucumber {
-    formats = ['pretty','json:build/cucumber.json','junit:build/cucumber.xml']
-    //default for glueDirs is src/test/java
-    // glueDirs = ['src/test/resources/env', 'src/test/resources/support', 'src/test/resources/step_definitions']
-    featureDirs = ['src/test/resources/features']
-    monochrome = false
-    strict = false
-    dryRun = false
 }
 
+task cuke(dependsOn: [assemble, processTestResources, testClasses],
+        description: 'Runs the bdd cucumber and junit tests.') {
+
+    doFirst {
+
+        // jettyRun.daemon = true
+
+        //jettyRun.execute()
+        tasks.cargoStartLocal.execute()
+    }
+
+    doLast {
+        //# format definitions.
+        def cucumberFeaturesDir = 'src/test/cucumber'
+        def cucumberGlueDir = cucumberFeaturesDir
+        def cucumberReportDir = "${project.buildDir}/reports/tests/cucumber-report"
+        def format_html = "html:${cucumberReportDir}"
+        def format_json = "json:${cucumberReportDir}/cucumber.json"
+        def format_junit = "junit:${cucumberReportDir}/cucumber.xml"
+
+        def format = format_html  //format_html //the choosen format.
+        try {
+            javaexec {
+                main = "cucumber.api.cli.Main"
+                classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+
+                args = ['-f', format, '--glue', cucumberGlueDir, cucumberFeaturesDir]
+            }
+        } catch (Exception e) {
+            println 'failure within cucumber tests. See Report!'
+        }
+
+        //# workaround for defect formatter.js (missing before/after)
+        def fromDir = file(cucumberFeaturesDir)
+        def toDir = file(cucumberReportDir)
+        println "copying a modified formatter.js from ${fromDir} to ${toDir} as fix for missing before/after " +
+                "functions"
+        project.copy {
+            from(fromDir) {
+                include 'formatter.js'
+            }
+            into(toDir)
+        }
+
+        // jettyStop.execute()
+        tasks.cargoStopLocal.execute()
+    }
+
 }
+
+

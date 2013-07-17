@@ -1,22 +1,25 @@
+package pages
+
 import geb.Page
 
 class UserDataPage extends Page {
     static url = "http://localhost:8081/userdata"
-    static at = { title == "userData" }
+    static at = {getUrl() == url }
     static content = {
         heading { $("h2") }
-        userDataForm { $ { '#newUserDataForm' } }
+        userDataForm { $ ( '#newUserDataForm' ) }
         saveButton(to: SavePage) { $('#submitNewUserDataForm') }
 
-        nameForm { $ { '#nameForm' } }
+        nameForm { $('#nameForm')  }
         searchButton(to: SavePage) { $('#submitNameForm') }
-
+        userDataList{ $('div.userData') }
+        firstUserDataFromListText{ $('div.userData',0).text() }
     }
 }
 
 
 class SavePage extends Page {
-    static at = { title == "userData" }
+    static at = {getTitle() == 'userData' }
     static content = {
         heading { $("h2") }
         userDataResponse { $("#userDataResponse") }
