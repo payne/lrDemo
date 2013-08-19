@@ -51,5 +51,10 @@ Then(~"^I am at the save results page"){ ->
    page.at
 }
 
+When(~'^i loop "([^"]*)"$') { String arg1 ->
+  println arg1
+}
 
-
+Then(~'^i print out "([^"]*)"$') { String arg1 ->
+    println arg1
+}

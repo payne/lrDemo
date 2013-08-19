@@ -25,3 +25,13 @@ Feature: user data management
 
 
 
+
+ Scenario Outline: Do something in a loop
+ When i loop "<gummi>"
+ Then i print out "<boot>"
+
+ Examples:
+ | gummi         | boot      |
+ | ein gummi   |  das boot  |
+ | wander       | Lust      |
+
